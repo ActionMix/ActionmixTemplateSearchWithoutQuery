@@ -1,0 +1,20 @@
+{
+    "name": "ActionmixTemplateSearchWithoutQuery",
+    "namespace": "ActionmixTemplateSearchWithoutQuery",
+    "marketplaceName": {
+        "de": "ActionMix | Template | SearchWithoutQuery",
+        "en": "ActionMix | Template | SearchWithoutQuery"
+    },
+    "type": "template",
+    "version": "0.9.1",
+    "email": "",
+    "phone": "",
+    "description": "Facet Search for Ceres",
+    "author": "ActionMix - DM",
+    "isClosedSource": true,
+    "require": {
+        "Ceres": ">= 3.0.0"
+    },
+    "serviceProvider": "ActionmixTemplateSearchWithoutQuery\\Providers\\ActionmixTemplateSearchWithoutQueryServiceProvider",
+    "dataProviders": []
+}
