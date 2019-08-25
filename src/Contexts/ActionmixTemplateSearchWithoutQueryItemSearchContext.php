@@ -6,9 +6,11 @@ use Ceres\Contexts\ItemSearchContext;
 use Ceres\Helper\SearchOptions;
 use IO\Helper\ContextInterface;
 use IO\Services\ItemSearch\SearchPresets\Facets;
-use IO\Services\ItemSearch\Services\ItemSearchService;
+use IO\Services\CheckoutService;
+use IO\Extensions\Filters\NumberFormatFilter;
 use ActionmixTemplateSearchWithoutQuery\Services\ItemSearch\SearchPresets\SearchItemsWithoutQuery;
 use ActionmixTemplateSearchWithoutQuery\Services\ItemSearch\SearchPresets\FacetsWithoutQuery;
+use Plenty\Plugin\Translation\Translator;
 
 class ActionmixTemplateSearchWithoutQueryItemSearchContext extends ItemSearchContext implements ContextInterface
 {
@@ -43,6 +45,31 @@ class ActionmixTemplateSearchWithoutQueryItemSearchContext extends ItemSearchCon
 
         $this->isSearch = true;
         $this->searchString = $itemListOptions['query'];
+        if ($this->searchString == '') {
+            $facetArray = explode(',', $itemListOptions['facets']);
+            foreach ($this->facets as $facet) {
+                foreach ($facet['values'] as $facetValue) {
+                    if (in_array($facetValue['id'], $facetArray)) {
+                        $this->searchString = $this->searchString . ', ' . $facetValue['name'];
+                    }
+                }
+            }
+            $this->searchString = substr($this->searchString, 2);
+
+            if ($itemListOptions['priceMin'] + $itemListOptions['priceMax'] > 0) {
+                $checkoutService = pluginApp(CheckoutService::class);
+                $numberFormatFilter = pluginApp(NumberFormatFilter::class);
+                $translator = pluginApp(Translator::class);
+
+                if ($itemListOptions['priceMax'] <= 0) {
+                    $this->searchString = $this->searchString . ', ' . $translator->trans("Ceres::Template.itemFrom") . ' ' .$numberFormatFilter->formatMonetary($itemListOptions['priceMin'], $checkoutService->getCurrency());
+                } else if ($itemListOptions['priceMin'] <= 0) {
+                    $this->searchString = $this->searchString . ', ' . $translator->trans("Ceres::Template.itemTo") . ' ' .  $numberFormatFilter->formatMonetary($itemListOptions['priceMax'], $checkoutService->getCurrency());
+                } else {
+                    $this->searchString = $this->searchString . ', ' . $numberFormatFilter->formatMonetary($itemListOptions['priceMin'], $checkoutService->getCurrency()) . " - " . $numberFormatFilter->formatMonetary($itemListOptions['priceMax'], $checkoutService->getCurrency());
+                }
+            }
+        }
         $this->isSearchWithoutQuery = true;
     }
 }
